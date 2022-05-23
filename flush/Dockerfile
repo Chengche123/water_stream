@@ -23,4 +23,4 @@ COPY . .
 COPY --from=builder /usr/local/lib/python3.8/site-packages/ /usr/local/lib/python3.8/site-packages/
 
 # 启动服务
-CMD [ "python", "water_stream_flush.py", "worker", "-l", "info"]
+CMD [ "python", "water_stream_flush.py", "worker", "-l", "info", "--without-web"]
