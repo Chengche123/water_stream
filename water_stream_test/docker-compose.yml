@@ -40,9 +40,21 @@ services:
     environment:
       - KAFKA_BROKER_CONNECT=kafka://kafka:9092
     volumes:
-      # 复制 wait-for-it 脚本
       - ./wait-for-it.sh:/usr/local/bin/wait-for-it.sh
     depends_on:
       - kafka
       - zookeeper
     command: wait-for-it.sh kafka:9092 -- python test_pub_msg.py worker -l info --without-web
+
+  window:
+    build:
+      context: ../window
+      dockerfile: ./Dockerfile
+    environment:
+      - KAFKA_BROKER_CONNECT=kafka://kafka:9092
+    volumes:
+      - ./wait-for-it.sh:/usr/local/bin/wait-for-it.sh
+    depends_on:
+      - kafka
+      - zookeeper
+    command: wait-for-it.sh kafka:9092 -- python water_stream_window.py worker -l info --without-web
