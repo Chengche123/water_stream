@@ -6,6 +6,7 @@ services:
     image: bitnami/zookeeper:3.5.7
     environment:
       - ALLOW_ANONYMOUS_LOGIN=yes
+    restart: unless-stopped
 
   kafka:
     image: bitnami/kafka:2.4.0
@@ -20,6 +21,7 @@ services:
       - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=CLIENT
     depends_on:
       - zookeeper
+    restart: unless-stopped
 
   kafka-ui:
     image: provectuslabs/kafka-ui
@@ -32,6 +34,7 @@ services:
     depends_on:
       - zookeeper
       - kafka
+    restart: unless-stopped
 
   publisher:
     build:
@@ -45,6 +48,7 @@ services:
       - kafka
       - zookeeper
     command: wait-for-it.sh kafka:9092 -- python test_pub_msg.py worker -l info --without-web
+    restart: unless-stopped
 
   window:
     build:
@@ -58,6 +62,7 @@ services:
       - kafka
       - zookeeper
     command: wait-for-it.sh kafka:9092 -- python water_stream_window.py worker -l info --without-web
+    restart: unless-stopped
 
   mongo:
     image: mongo:4.2.1
@@ -66,6 +71,7 @@ services:
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: root
+    restart: unless-stopped
 
   mongo-express:
     image: mongo-express
@@ -83,6 +89,7 @@ services:
     image: redis:5
     ports:
       - 6379
+    restart: unless-stopped
 
   redis-commander:
     image: rediscommander/redis-commander:latest
@@ -90,3 +97,22 @@ services:
       - 8081
     environment:
       - REDIS_HOSTS=local:redis:6379
+    restart: unless-stopped
+
+  flush:
+    build:
+      context: ../flush
+      dockerfile: ./Dockerfile
+    environment:
+      - KAFKA_BROKER_CONNECT=kafka://kafka:9092
+      - REDIS_HOST=redis://redis:6379
+      - MONGO_HOST=mongodb://root:root@mongo:27017
+    volumes:
+      - ./wait-for-it.sh:/usr/local/bin/wait-for-it.sh
+    depends_on:
+      - kafka
+      - zookeeper
+      - redis
+      - mongo
+    command: wait-for-it.sh kafka:9092 -- wait-for-it.sh redis:6379 -- wait-for-it.sh mongo:27017 -- python water_stream_flush.py worker -l info --without-web
+    restart: unless-stopped

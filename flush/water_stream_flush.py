@@ -8,6 +8,9 @@ from pymongo.mongo_client import MongoClient
 import models
 
 
+REDIS_HOST = os.getenv('REDIS_HOST', 'redis://127.0.0.1:6380')
+MONGO_HOST = os.getenv('MONGO_HOST', 'mongodb://root:root@127.0.0.1:27017')
+
 WINDOW_CHANGELOG_TOPIC_NAME = os.getenv('WINDOW_CHANGELOG_TOPIC_NAME', 'water_sensor_data_count_changelog')
 APP_NAME = os.getenv('APP_NAME', 'water_stream_flush')
 KAFKA_BROKER_CONNECT = os.getenv('KAFKA_BROKER_CONNECT', 'kafka://127.0.0.1:9093')
@@ -26,7 +29,7 @@ class MyApp(faust.App):
 
     @property
     def _mongo(self):
-        return MongoClient('mongodb://root:root@127.0.0.1:27017')
+        return MongoClient(MONGO_HOST)
 
     @property
     def mongo_coll(self):
@@ -34,7 +37,7 @@ class MyApp(faust.App):
 
     @property
     def redis(self):
-        return aioredis.from_url('redis://127.0.0.1:6380')
+        return aioredis.from_url(REDIS_HOST)
 
     async def on_stop(self):
         self._mongo.close()
