@@ -2,6 +2,10 @@
 
 ```
 water_stream/
+|-- dump                               # 获取任意指定时间段 kafka 中的数据，并保存到文件
+|   |-- consume_by_datetime.py         # 命令脚本
+|   |-- Dockerfile
+|   `-- requirements.txt
 |-- flush                              # 消费 changelog ，设置 Redis 缓存，并定时写入 MongoDB
 |   |-- Dockerfile
 |   |-- models.py                      # MongoDB 模型
